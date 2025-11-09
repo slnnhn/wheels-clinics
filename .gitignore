@@ -14,3 +14,9 @@ top_*_candidate_sites.csv
 optimization_input_data.json
 coverage_statistics.txt
 nearest_neighbor_distances.csv
+
+# Optimization output files
+optimal_facility_locations.csv
+demand_coverage.csv
+optimization_solution.json
+optimization_statistics.txt
