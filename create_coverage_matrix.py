@@ -76,13 +76,13 @@ def create_geodataframe(df):
     return gdf, gdf_projected
 
 
-def create_buffers(gdf_projected, buffer_radius_km=15):
+def create_buffers(gdf_projected, buffer_radius_km=5):
     """
     Create buffer zones around each candidate site.
 
     Args:
         gdf_projected: GeoDataFrame in projected CRS (meters)
-        buffer_radius_km: Buffer radius in kilometers (default: 15km)
+        buffer_radius_km: Buffer radius in kilometers (default: 5km)
 
     Returns:
         GeoDataFrame with buffer geometries
@@ -227,27 +227,27 @@ def analyze_coverage(coverage_dict, reverse_coverage_dict, demand_df):
     print(f"  Average population per site: {np.mean(pop_coverage_values):,.0f}")
     print(f"  Median population per site: {np.median(pop_coverage_values):,.0f}")
 
-    # Top 30 sites by population coverage (for the 30 mobile units)
-    print(f"\nTop 30 Candidate Sites by Population Coverage:")
-    top_30_sites = sorted(site_population_coverage.items(), key=lambda x: x[1], reverse=True)[:30]
+    # Top 200 sites by population coverage (for the 200 mobile units)
+    print(f"\nTop 200 Candidate Sites by Population Coverage:")
+    top_200_sites = sorted(site_population_coverage.items(), key=lambda x: x[1], reverse=True)[:200]
     print(f"  {'Rank':<6} {'Site ID':<10} {'Population Covered':<20}")
     print(f"  {'-'*6} {'-'*10} {'-'*20}")
-    for rank, (site_id, pop) in enumerate(top_30_sites, 1):
+    for rank, (site_id, pop) in enumerate(top_200_sites, 1):
         print(f"  {rank:<6} {site_id:<10} {pop:>18,}")
 
-    total_top_30_coverage = sum([pop for _, pop in top_30_sites])
+    total_top_200_coverage = sum([pop for _, pop in top_200_sites])
     total_population = demand_df['population'].sum()
-    coverage_pct = (total_top_30_coverage / total_population) * 100
+    coverage_pct = (total_top_200_coverage / total_population) * 100
 
-    print(f"\n  Total population if top 30 sites are selected: {total_top_30_coverage:,}")
+    print(f"\n  Total population if top 200 sites are selected: {total_top_200_coverage:,}")
     print(f"  Overall population: {total_population:,}")
     print(f"  Coverage percentage: {coverage_pct:.2f}%")
 
-    return site_population_coverage, top_30_sites
+    return site_population_coverage, top_200_sites
 
 
 def save_coverage_data(coverage_dict, reverse_coverage_dict, coverage_matrix_df,
-                       demand_df, site_population_coverage, top_30_sites):
+                       demand_df, site_population_coverage, top_200_sites):
     """
     Save coverage data to various formats for optimization.
     """
@@ -296,35 +296,35 @@ def save_coverage_data(coverage_dict, reverse_coverage_dict, coverage_matrix_df,
     print(f"   Columns: candidate_site_id, total_population_covered")
     print(f"   Sorted by population coverage (descending)")
 
-    # 4. Save top 30 sites
-    top_30_df = pd.DataFrame([
+    # 4. Save top 200 sites
+    top_200_df = pd.DataFrame([
         {'rank': rank, 'candidate_site_id': site_id, 'population_covered': pop}
-        for rank, (site_id, pop) in enumerate(top_30_sites, 1)
+        for rank, (site_id, pop) in enumerate(top_200_sites, 1)
     ])
 
     # Add coordinates and demand count for the top 30
     demand_df_indexed = demand_df.set_index('cluster_id')
-    top_30_df['latitude'] = top_30_df['candidate_site_id'].map(demand_df_indexed['latitude'])
-    top_30_df['longitude'] = top_30_df['candidate_site_id'].map(demand_df_indexed['longitude'])
-    top_30_df['num_demand_points_covered'] = top_30_df['candidate_site_id'].map(
+    top_200_df['latitude'] = top_200_df['candidate_site_id'].map(demand_df_indexed['latitude'])
+    top_200_df['longitude'] = top_200_df['candidate_site_id'].map(demand_df_indexed['longitude'])
+    top_200_df['num_demand_points_covered'] = top_200_df['candidate_site_id'].map(
         lambda x: len(reverse_coverage_dict.get(x, []))
     )
 
-    top_30_csv = 'top_30_candidate_sites.csv'
-    top_30_df.to_csv(top_30_csv, index=False)
-    print(f"\n5. Top 30 candidate sites saved to: {top_30_csv}")
+    top_200_csv = 'top_200_candidate_sites.csv'
+    top_200_df.to_csv(top_200_csv, index=False)
+    print(f"\n5. Top 200 candidate sites saved to: {top_200_csv}")
     print(f"   Columns: rank, candidate_site_id, population_covered, latitude, longitude, num_demand_points_covered")
 
     # 5. Save optimization input data
     optimization_data = {
         'num_demand_points': len(demand_df),
         'num_candidate_sites': len(demand_df),
-        'num_mobile_units': 30,
-        'buffer_radius_km': 15,
+        'num_mobile_units': 200,
+        'buffer_radius_km': 5,
         'total_population': int(demand_df['population'].sum()),
         'coverage_relationships': len(coverage_matrix_df),
         'demand_points': demand_df[['cluster_id', 'latitude', 'longitude', 'population']].to_dict('records'),
-        'top_30_sites': top_30_df.to_dict('records')
+        'top_200_sites': top_200_df.to_dict('records')
     }
 
     optimization_json = 'optimization_input_data.json'
@@ -341,8 +341,8 @@ def save_coverage_data(coverage_dict, reverse_coverage_dict, coverage_matrix_df,
         f.write(f"Problem Parameters:\n")
         f.write(f"  Number of demand points: {len(demand_df):,}\n")
         f.write(f"  Number of candidate sites: {len(demand_df):,}\n")
-        f.write(f"  Number of mobile units to place: 30\n")
-        f.write(f"  Coverage radius: 15 km\n")
+        f.write(f"  Number of mobile units to place: 200\n")
+        f.write(f"  Coverage radius: 5 km\n")
         f.write(f"  Total population: {demand_df['population'].sum():,} children\n\n")
 
         f.write(f"Coverage Matrix:\n")
@@ -350,9 +350,9 @@ def save_coverage_data(coverage_dict, reverse_coverage_dict, coverage_matrix_df,
         f.write(f"  Average candidates per demand point: {len(coverage_matrix_df) / len(demand_df):.2f}\n")
         f.write(f"  Average demand points per candidate: {len(coverage_matrix_df) / len(demand_df):.2f}\n\n")
 
-        f.write(f"Top 30 Sites Coverage:\n")
-        f.write(f"  Total population covered: {sum([pop for _, pop in top_30_sites]):,}\n")
-        f.write(f"  Coverage percentage: {(sum([pop for _, pop in top_30_sites]) / demand_df['population'].sum()) * 100:.2f}%\n")
+        f.write(f"Top 200 Sites Coverage:\n")
+        f.write(f"  Total population covered: {sum([pop for _, pop in top_200_sites]):,}\n")
+        f.write(f"  Coverage percentage: {(sum([pop for _, pop in top_200_sites]) / demand_df['population'].sum()) * 100:.2f}%\n")
 
     print(f"\n7. Coverage statistics saved to: {stats_file}")
 
@@ -371,8 +371,8 @@ def main():
     print("\nProblem Setup:")
     print("  - Demand points: Clustered population locations with children count")
     print("  - Candidate sites: Same as demand points (1,000 locations)")
-    print("  - Mobile units to place: 30")
-    print("  - Coverage radius: 15 km")
+    print("  - Mobile units to place: 200")
+    print("  - Coverage radius: 5 km")
     print("="*70)
 
     # Step 1: Load cluster data
@@ -384,8 +384,8 @@ def main():
     gdf_wgs84, gdf_projected = create_geodataframe(demand_df)
 
     # Step 3: Create 5km buffers around each candidate site
-    print("\n3. Creating 15km buffers around candidate sites...")
-    candidate_buffers = create_buffers(gdf_projected, buffer_radius_km=15)
+    print("\n3. Creating 5km buffers around candidate sites...")
+    candidate_buffers = create_buffers(gdf_projected, buffer_radius_km=5)
 
     # Step 4: Create coverage matrix
     print("\n4. Creating coverage matrix...")
@@ -395,7 +395,7 @@ def main():
 
     # Step 5: Analyze coverage
     print("\n5. Analyzing coverage...")
-    site_population_coverage, top_30_sites = analyze_coverage(
+    site_population_coverage, top_200_sites = analyze_coverage(
         coverage_dict, reverse_coverage_dict, demand_df
     )
 
@@ -403,7 +403,7 @@ def main():
     print("\n6. Saving coverage data...")
     save_coverage_data(
         coverage_dict, reverse_coverage_dict, coverage_matrix_df,
-        demand_df, site_population_coverage, top_30_sites
+        demand_df, site_population_coverage, top_200_sites
     )
 
     print("\n" + "="*70)
@@ -414,10 +414,10 @@ def main():
     print("  2. coverage_dict.json - Demand point -> Candidate sites mapping")
     print("  3. reverse_coverage_dict.json - Candidate site -> Demand points mapping")
     print("  4. candidate_sites_population_coverage.csv - Population each site can serve")
-    print("  5. top_30_candidate_sites.csv - Best 30 sites by population coverage")
+    print("  5. top_200_candidate_sites.csv - Best 200 sites by population coverage")
     print("  6. optimization_input_data.json - All data for optimization solver")
     print("  7. coverage_statistics.txt - Summary statistics")
-    print("\nNext step: Use these files in your optimization solver to select optimal 30 sites")
+    print("\nNext step: Use these files in your optimization solver to select optimal 200 sites")
 
 
 if __name__ == '__main__':
