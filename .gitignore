@@ -10,7 +10,7 @@ coverage_matrix.csv
 coverage_dict.json
 reverse_coverage_dict.json
 candidate_sites_population_coverage.csv
-top_30_candidate_sites.csv
+top_*_candidate_sites.csv
 optimization_input_data.json
 coverage_statistics.txt
 nearest_neighbor_distances.csv
