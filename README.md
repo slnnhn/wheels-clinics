@@ -73,6 +73,41 @@ Required packages:
 - `geopandas` - Geographic data processing
 - `matplotlib` - Static visualizations
 - `folium` - Interactive maps
+- `pulp` - Optimization solver
+- `dash` - Interactive dashboards
+- `plotly` - Interactive visualizations
+
+## 🚀 One-Command Pipeline
+
+**NEW**: Run the entire optimization pipeline with a single command!
+
+```bash
+# Make script executable (first time only)
+chmod +x run_optimization_pipeline.sh
+
+# Run complete pipeline with default parameters (200 units, $10k each)
+./run_optimization_pipeline.sh
+
+# Or specify custom parameters
+./run_optimization_pipeline.sh 150        # 150 units, $10k each
+./run_optimization_pipeline.sh 150 15000  # 150 units, $15k each
+```
+
+This automated script will:
+1. ✅ Check prerequisites and install missing dependencies
+2. ✅ Generate test data (if needed)
+3. ✅ Create clusters (100k points → 1k demand centers)
+4. ✅ Generate coverage matrix (5km radius buffers)
+5. ✅ Run PuLP optimization (select optimal facility locations)
+6. ✅ Launch interactive dashboard at http://127.0.0.1:8050
+
+**Total runtime**: ~1-2 minutes for complete pipeline
+
+The script includes:
+- Progress indicators and colored output
+- Interactive prompts for regenerating existing data
+- Error handling and validation
+- Results summary before launching dashboard
 
 ## 📁 Repository Structure
 
@@ -80,7 +115,11 @@ Required packages:
 wheels-clinics/
 ├── README.md                              # This file
 ├── README_CLUSTERING.md                   # Detailed clustering documentation
+├── OPTIMIZATION_README.md                 # Optimization documentation
+├── QUICK_START_DASHBOARD.md               # Dashboard quick start guide
+├── PROJECT_SUMMARY.md                     # Complete project summary
 ├── requirements.txt                       # Python dependencies
+├── run_optimization_pipeline.sh           # ⭐ ONE-COMMAND PIPELINE SCRIPT
 ├── .gitignore                            # Git ignore rules
 │
 ├── Data Files (Git LFS)
@@ -99,7 +138,13 @@ wheels-clinics/
 ├── cluster_population.py                 # Cluster all population data
 ├── generate_test_data.py                 # Generate synthetic test data
 │
+├── Optimization Scripts
+├── create_coverage_matrix.py             # Generate coverage matrix
+├── analyze_coverage_distances.py         # Distance analysis
+├── optimize_facility_location.py         # PuLP optimization solver
+│
 └── Visualization Scripts
+    ├── visualize_optimization_dashboard.py # Interactive dashboard (Dash)
     ├── visualize_clusters_interactive.py  # Interactive map (Folium)
     ├── visualize_clustered_population.py  # Static maps (Matplotlib)
     └── visualize_ta_boundaries.py         # Administrative boundaries map
@@ -107,7 +152,24 @@ wheels-clinics/
 
 ## 🚀 Quick Start
 
-### Option 1: Cluster Children Under 5 Population (Recommended)
+### Option 1: Complete Optimization Pipeline ⭐ RECOMMENDED
+
+**Run everything with one command:**
+
+```bash
+./run_optimization_pipeline.sh
+```
+
+This will automatically:
+- Generate/verify data
+- Create clusters
+- Build coverage matrix
+- Run optimization
+- Launch interactive dashboard
+
+See [One-Command Pipeline](#-one-command-pipeline) section above for details.
+
+### Option 2: Cluster Children Under 5 Population (Manual Steps)
 
 This workflow clusters 100,000 random children data points into 1,000 optimized locations:
 
@@ -129,7 +191,7 @@ start malawi_clusters_interactive.html       # Windows
 
 **Output:** Interactive HTML map with 1,000 cluster markers, each showing population count on hover
 
-### Option 2: Cluster All Population Data
+### Option 3: Cluster All Population Data (Manual)
 
 This clusters all demographic groups with a 100:1 reduction ratio:
 
@@ -145,7 +207,7 @@ python3 visualize_clustered_population.py
 
 **Output:** Static PNG maps showing population distribution
 
-### Option 3: View Administrative Boundaries
+### Option 4: View Administrative Boundaries
 
 ```bash
 # Generate boundary visualization
