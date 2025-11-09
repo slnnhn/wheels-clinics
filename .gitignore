@@ -4,3 +4,13 @@ clustered_children_1000.csv
 clustered_children_1000_stats.txt
 mwi_children_under_five_2020_test.csv
 malawi_clusters_interactive.html
+
+# Coverage matrix generated files
+coverage_matrix.csv
+coverage_dict.json
+reverse_coverage_dict.json
+candidate_sites_population_coverage.csv
+top_30_candidate_sites.csv
+optimization_input_data.json
+coverage_statistics.txt
+nearest_neighbor_distances.csv
